@@ -2,11 +2,11 @@ import { useState, useEffect } from "react";
 //j'utilise des axios pour parler avec laravel 
 import API from "../api/axios";
 
-const INITIAL_STATE = { title: "", content: "", priority: "basse" };
+const INITIAL_STATE = { title: "", content: "", priority: 1 };
 const PRIORITIES = [
-  { value: "basse", label: "🟢 Basse" },
-  { value: "moyenne", label: "🟡 Moyenne" },
-  { value: "haute", label: "🔴 Haute" },
+  { value: 1, label: "🟢 Basse" },
+  { value: 2, label: "🟡 Moyenne" },
+  { value: 3, label: "🔴 Haute" },
 ];
 
 function NoteForm({ fetchNotes, editingNote, onEditComplete, showNotification }) {
@@ -49,7 +49,19 @@ function NoteForm({ fetchNotes, editingNote, onEditComplete, showNotification })
       fetchNotes();
       if (onEditComplete) onEditComplete();
     } catch (err) {
-      const message = editingNote ? "Erreur lors de la modification." : "Erreur lors de la création.";
+      const status = err.response?.status;
+      let message = editingNote ? "Erreur lors de la modification." : "Erreur lors de la création.";
+      
+      if (status === 401) {
+        message = "Session expirée. Veuillez vous reconnecter.";
+      } else if (status === 404) {
+        message = "Note introuvable.";
+      } else if (status === 422) {
+        message = "Données invalides. Vérifiez le titre (max 100 caractères).";
+      } else if (status === 500) {
+        message = "Erreur serveur. Réessayez plus tard.";
+      }
+      
       setError(message);
       showNotification?.(message, "error");
       console.error(err);

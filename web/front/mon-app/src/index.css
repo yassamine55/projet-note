@@ -179,25 +179,58 @@ code {
   margin-bottom: 20px;
 }
 
-/* Success Message */
-.success-message {
-  background-color: #d4edda;
-  border: 1px solid #28a745;
-  color: #155724;
-  padding: 12px;
-  border-radius: 6px;
-  margin-bottom: 20px;
-  text-align: center;
+/* Toast Notifications */
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 15px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  max-width: 400px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 500;
+  animation: slideIn 0.3s ease-out;
 }
 
-.error-message {
-  background-color: #f8d7da;
+.toast-success {
+  background: #d4edda;
+  border: 1px solid #28a745;
+  color: #155724;
+}
+
+.toast-error {
+  background: #f8d7da;
   border: 1px solid #dc3545;
   color: #721c24;
-  padding: 12px;
-  border-radius: 6px;
-  margin-bottom: 20px;
-  text-align: center;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  margin-left: 15px;
+  color: inherit;
+  opacity: 0.7;
+}
+
+.toast-close:hover {
+  opacity: 1;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 /* Loading State */
@@ -422,13 +455,14 @@ code {
   box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
 }
 
-/* Search Box */
-.search-box {
+/* Controls Section */
+.controls-section {
   background: white;
   padding: 20px;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   margin-bottom: 25px;
+  text-align: center;
 }
 
 .search-box input {
@@ -539,6 +573,13 @@ code {
   border-radius: 8px;
 }
 
+.note-date {
+  color: #888;
+  font-size: 12px;
+  margin: 0;
+  font-style: italic;
+}
+
 .priority {
   display: inline-block;
   padding: 6px 12px;
@@ -549,19 +590,19 @@ code {
   letter-spacing: 0.5px;
 }
 
-.priority.haute {
-  background: #ffe5e5;
-  color: #e74c3c;
+.priority-1 {
+  background: #e8f5e9;
+  color: #27ae60;
 }
 
-.priority.moyenne {
+.priority-2 {
   background: #fff3e0;
   color: #f39c12;
 }
 
-.priority.basse {
-  background: #e8f5e9;
-  color: #27ae60;
+.priority-3 {
+  background: #ffe5e5;
+  color: #e74c3c;
 }
 
 /* Note Actions */
