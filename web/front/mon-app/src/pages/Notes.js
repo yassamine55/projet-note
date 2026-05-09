@@ -5,12 +5,12 @@ import { useNavigate } from "react-router-dom";
 import NoteForm from "../components/NoteForm";
 import NoteList from "../components/NoteList";
 
-const PRIORITY_ORDER = { haute: 3, moyenne: 2, basse: 1 };
+const PRIORITY_ORDER = { 3: 3, 2: 2, 1: 1 };
 const FILTERS = [
   { value: "tous", label: "📋 Tous", icon: "" },
-  { value: "haute", label: "🔴 Haute", icon: "" },
-  { value: "moyenne", label: "🟡 Moyenne", icon: "" },
-  { value: "basse", label: "🟢 Basse", icon: "" },
+  { value: 3, label: "🔴 Haute", icon: "" },
+  { value: 2, label: "🟡 Moyenne", icon: "" },
+  { value: 1, label: "🟢 Basse", icon: "" },
 ];
 
 function Notes() {
@@ -19,9 +19,15 @@ function Notes() {
   const [search, setSearch] = useState("");
   const [editingNote, setEditingNote] = useState(null);
   const [notification, setNotification] = useState({ message: "", type: "" });
+  const [showFilters, setShowFilters] = useState(true);
 
   const { token, logout } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  const showNotification = (message, type = "success") => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification({ message: "", type: "" }), 5000);
+  };
 
   const fetchNotes = useCallback(async () => {
     if (!token) return;
@@ -30,8 +36,20 @@ function Notes() {
       setNotes(res.data);
     } catch (error) {
       console.error("Error fetching notes:", error);
+      const status = error.response?.status;
+      let message = "Erreur lors du chargement des notes.";
+      
+      if (status === 401) {
+        message = "Session expirée. Veuillez vous reconnecter.";
+        logout();
+        navigate("/login");
+      } else if (status === 500) {
+        message = "Erreur serveur. Réessayez plus tard.";
+      }
+      
+      showNotification(message, "error");
     }
-  }, [token]);
+  }, [token, logout, navigate, showNotification]);
 
   useEffect(() => {
     if (token) fetchNotes();
@@ -42,22 +60,17 @@ function Notes() {
     navigate("/login");
   };
 
-  const showNotification = (message, type = "success") => {
-    setNotification({ message, type });
-    setTimeout(() => setNotification({ message: "", type: "" }), 5000);
-  };
-
   const handleEdit = (note) => {
     setEditingNote(note);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const filteredNotes = notes
-    .filter((note) => filter === "tous" || note.priority === filter)
+    .filter((note) => filter === "tous" || note.priority == filter)
     .filter((note) => note.title.toLowerCase().includes(search.toLowerCase()));
 
   const sortedNotes = [...filteredNotes].sort(
-    (a, b) => PRIORITY_ORDER[b.priority] - PRIORITY_ORDER[a.priority]
+    (a, b) => new Date(b.created_at) - new Date(a.created_at)
   );
 
   return (
@@ -70,8 +83,11 @@ function Notes() {
       </div>
 
       {notification.message && (
-        <div className={notification.type === "success" ? "success-message" : "error-message"}>
+        <div className={`toast toast-${notification.type}`}>
           {notification.message}
+          <button className="toast-close" onClick={() => setNotification({ message: "", type: "" })}>
+            ×
+          </button>
         </div>
       )}
 
@@ -84,26 +100,36 @@ function Notes() {
         />
       </div>
 
-      <div className="search-box">
-        <input
-          type="text"
-          placeholder="🔍 Rechercher une note..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      <div className="controls-section">
+        <button className="btn btn-secondary" onClick={() => setShowFilters(!showFilters)}>
+          {showFilters ? "Masquer les filtres" : "Afficher les filtres"}
+        </button>
       </div>
 
-      <div className="filter-buttons">
-        {FILTERS.map(({ value, label }) => (
-          <button 
-            key={value}
-            onClick={() => setFilter(value)}
-            className={filter === value ? "active" : ""}
-          >
-            {value === "tous" ? `${label} (${notes.length})` : label}
-          </button>
-        ))}
-      </div>
+      {showFilters && (
+        <>
+          <div className="search-box">
+            <input
+              type="text"
+              placeholder="🔍 Rechercher une note..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+
+          <div className="filter-buttons">
+            {FILTERS.map(({ value, label }) => (
+              <button 
+                key={value}
+                onClick={() => setFilter(value)}
+                className={filter === value ? "active" : ""}
+              >
+                {value === "tous" ? `${label} (${notes.length})` : label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
 
       <NoteList 
         notes={sortedNotes} 

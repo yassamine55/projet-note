@@ -15,7 +15,7 @@ class AuthController extends Controller
         $request->validate([
             'name' => 'required|string',
             'email' => 'required|email|unique:users',
-            'password' => 'required|min:6',
+            'password' => 'required|min:6|confirmed',
         ]);
 
         $user = User::create([
@@ -40,7 +40,15 @@ class AuthController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        if (!$user) {
+            \Log::info('User not found for email: ' . $request->email);
+            return response()->json([
+                'message' => 'Invalid credentials'
+            ], 401);
+        }
+
+        if (!Hash::check($request->password, $user->password)) {
+            \Log::info('Password check failed for user: ' . $user->email);
             return response()->json([
                 'message' => 'Invalid credentials'
             ], 401);

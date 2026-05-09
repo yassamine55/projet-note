@@ -9,21 +9,23 @@ class NoteController extends Controller
 {
     public function index(Request $request)
     {
-        return Note::where('user_id', $request->user()->id)->get();
+        return Note::where('user_id', $request->user()->id)
+                   ->orderBy('created_at', 'desc')
+                   ->get();
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'title' => 'required|string|max:255',
+            'title' => 'required|string|max:100',
             'content' => 'nullable|string',
-            'priority' => 'nullable|in:basse,moyenne,haute',
+            'priority' => 'nullable|integer|min:1|max:3',
         ]);
 
         return Note::create([
             'title'    => $request->title,
             'content'  => $request->content ?? '',
-            'priority' => $request->priority ?? 'basse',
+            'priority' => $request->priority ?? 1,
             'user_id'  => $request->user()->id,
         ]);
     }
@@ -31,9 +33,9 @@ class NoteController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'title' => 'required|string|max:255',
+            'title' => 'required|string|max:100',
             'content' => 'nullable|string',
-            'priority' => 'nullable|in:basse,moyenne,haute',
+            'priority' => 'nullable|integer|min:1|max:3',
         ]);
 
         $note = Note::where('id', $id)
@@ -43,7 +45,7 @@ class NoteController extends Controller
         $note->update([
             'title'    => $request->title,
             'content'  => $request->content ?? '',
-            'priority' => $request->priority ?? 'basse',
+            'priority' => $request->priority ?? 1,
         ]);
 
         return $note;
